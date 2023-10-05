@@ -19,15 +19,6 @@ class RecuitNotice {
             res.send("Hi!");
         })
         app.get("/register",(req,res)=>{
-            req = {
-                nation: '한국',
-                region: '서울',
-                position: '개발자',
-                reward: 500000,
-                skill: 'nodeJS',
-                detail: '삼성전자에서 백엔드 시니어를 채용합니다. 자격요건은...',
-                company_id: 1
-            };
             this.registerNotice(req,res);
         })
         app.get("/modify",(req,res)=>{
@@ -70,14 +61,23 @@ class RecuitNotice {
         let values = [data.nation, data.region, data.position, data.reward, data.skill, data.detail, data.company_id];
         oDb.query(sql,values,function(err,result) {
             if(err) throw err;
-            if(result.affectedRows == 1) {
+            if(result.affectedRows > 0) {
                 res.send("공고 등록이 완료되었습니다.");
             }
         })
     }
     
     modifyNotice(data,res){
-        res.send({result:results});
+        const oDb = mysql.createConnection(this.oDbConfig);
+        let sql = "UPDATE notice SET nation = ?, region = ?, position = ?, reward = ?, skill = ?, detail = ? WHERE company_id = ? AND idx = ?";
+        let values = [data.nation, data.region, data.position, data.reward, data.skill, data.detail, data.company_id,data.idx];
+        oDb.query(sql,values,function(err,result) {
+            if(err) throw err;
+            console.log(result);
+            if(result.affectedRows == 1) {
+                res.send("공고 수정이 완료되었습니다.");
+            }
+        })
     }
 
     deleteNotice(data,res){
