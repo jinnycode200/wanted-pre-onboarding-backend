@@ -1,24 +1,33 @@
 const express = require('express');
 const mysql = require('mysql');
-
-
 class RecuitNotice {
     constructor() {
+        this.oDbConfig = {
+            host: '127.0.0.1',
+            user: 'root',
+            password: 'tuadlek11',
+            database: 'wanted_preonboarding_backend',
+            port: 3306,
+            multipleStatements : true
+        };
         this.startWebServer();
     }
     startWebServer() {
-        console.log('1')
         this.ConnectDB();
-        /**초기값 추가할것! */
-        // setTimeout(() => {
-        //     this.setInitialData();    
-        // }, 3000);
-
         let app = express();
         app.get("/",(req,res)=>{
             res.send("Hi!");
         })
         app.get("/register",(req,res)=>{
+            req = {
+                nation: '한국',
+                region: '서울',
+                position: '개발자',
+                reward: 500000,
+                skill: 'nodeJS',
+                detail: '삼성전자에서 백엔드 시니어를 채용합니다. 자격요건은...',
+                company_id: 1
+            };
             this.registerNotice(req,res);
         })
         app.get("/modify",(req,res)=>{
@@ -45,25 +54,26 @@ class RecuitNotice {
         })
     }
     ConnectDB() {
-        const db = mysql.createConnection({
-            host: '127.0.0.1',
-            user: 'root',
-            password: 'tuadlek11',
-            database: 'wanted_preonboarding_backend',
-            port: 3306,
-            multipleStatements : true
-        });
-        db.connect(function(err) {
+        const oDb = mysql.createConnection(this.oDbConfig);
+        oDb.connect(function(err) {
             if(err) throw err;
-            db.query("CREATE TABLE IF NOT EXISTS company(idx INT NOT NULL PRIMARY KEY AUTO_INCREMENT,name VARCHAR(11) NOT NULL);CREATE TABLE IF NOT EXISTS notice(idx INT NOT NULL PRIMARY KEY AUTO_INCREMENT, nation VARCHAR(11) NOT NULL, region VARCHAR(11) NOT NULL, position VARCHAR(20) NOT NULL, reward INT, skill VARCHAR(11) NOT NULL, detail VARCHAR(200),company_id INT NOT NULL, FOREIGN KEY(company_id) REFERENCES company(idx));CREATE TABLE IF NOT EXISTS user(idx INT NOT NULL PRIMARY KEY AUTO_INCREMENT, id VARCHAR(11) NOT NULL,applied_notice INT NOT NULL, FOREIGN KEY(applied_notice) REFERENCES notice(idx));",
+            oDb.query("CREATE TABLE IF NOT EXISTS company(idx INT NOT NULL PRIMARY KEY AUTO_INCREMENT,name VARCHAR(11) NOT NULL);CREATE TABLE IF NOT EXISTS notice(idx INT NOT NULL PRIMARY KEY AUTO_INCREMENT, nation VARCHAR(11) NOT NULL, region VARCHAR(11) NOT NULL, position VARCHAR(20) NOT NULL, reward INT, skill VARCHAR(11) NOT NULL, detail VARCHAR(200),company_id INT NOT NULL, FOREIGN KEY(company_id) REFERENCES company(idx));CREATE TABLE IF NOT EXISTS user(idx INT NOT NULL PRIMARY KEY AUTO_INCREMENT, id VARCHAR(11) NOT NULL,applied_notice INT NOT NULL, FOREIGN KEY(applied_notice) REFERENCES notice(idx));",
             function(err) {
                 console.log(err)
             });
         })
     }
+
     registerNotice(data,res){
-        // res.send('등록페이지');
-        res.send({result:results});
+        const oDb = mysql.createConnection(this.oDbConfig);
+        let sql = "INSERT INTO notice (nation,region,position,reward,skill,detail,company_id) VALUES (?,?,?,?,?,?,?)";
+        let values = [data.nation, data.region, data.position, data.reward, data.skill, data.detail, data.company_id];
+        oDb.query(sql,values,function(err,result) {
+            if(err) throw err;
+            if(result.affectedRows == 1) {
+                res.send("공고 등록이 완료되었습니다.");
+            }
+        })
     }
     
     modifyNotice(data,res){
