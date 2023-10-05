@@ -25,6 +25,9 @@ class RecuitNotice {
             this.modifyNotice(req,res);
         })
         app.get("/delete",(req,res)=>{
+            req = {
+                idx: 8,
+            };
             this.deleteNotice(req,res);
         })
         app.get("/list",(req,res)=>{
@@ -81,7 +84,16 @@ class RecuitNotice {
     }
 
     deleteNotice(data,res){
-        res.send({result:results});
+        const oDb = mysql.createConnection(this.oDbConfig);
+        let sql = "DELETE FROM notice WHERE idx = ?";
+        let value = [data.idx];
+        oDb.query(sql,value,function(err,result) {
+            if(err) throw err;
+            console.log(result);
+            if(result.affectedRows == 1) {
+                res.send("공고 삭제가 완료되었습니다.");
+            }
+        })
     }
 
     getNoticeList(data,res){
