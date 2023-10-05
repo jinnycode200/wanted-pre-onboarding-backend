@@ -69,8 +69,8 @@ class RecuitNotice {
     
     modifyNotice(data,res){
         const oDb = mysql.createConnection(this.oDbConfig);
-        let sql = "UPDATE notice SET nation = ?, region = ?, position = ?, reward = ?, skill = ?, detail = ? WHERE company_id = ? AND idx = ?";
-        let values = [data.nation, data.region, data.position, data.reward, data.skill, data.detail, data.company_id,data.idx];
+        let sql = "UPDATE notice SET nation = ?, region = ?, position = ?, reward = ?, skill = ?, detail = ? WHERE idx = ?";
+        let values = [data.nation, data.region, data.position, data.reward, data.skill, data.detail, data.idx];
         oDb.query(sql,values,function(err,result) {
             if(err) throw err;
             console.log(result);
