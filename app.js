@@ -25,9 +25,6 @@ class RecuitNotice {
             this.modifyNotice(req,res);
         })
         app.get("/delete",(req,res)=>{
-            req = {
-                idx: 8,
-            };
             this.deleteNotice(req,res);
         })
         app.get("/list",(req,res)=>{
