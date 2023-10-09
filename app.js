@@ -62,7 +62,7 @@ class RecuitNotice {
         oDb.query(sql,values,function(err,result) {
             if(err) throw err;
             if(result.affectedRows > 0) {
-                res.send("공고 등록이 완료되었습니다.");
+                res.send({result: "공고 등록완료"});
             }
         })
     }
@@ -73,9 +73,8 @@ class RecuitNotice {
         let values = [data.nation, data.region, data.position, data.reward, data.skill, data.detail, data.idx];
         oDb.query(sql,values,function(err,result) {
             if(err) throw err;
-            console.log(result);
             if(result.affectedRows == 1) {
-                res.send("공고 수정이 완료되었습니다.");
+                res.send({result: "공고 수정완료"});
             }
         })
     }
@@ -86,19 +85,30 @@ class RecuitNotice {
         let value = [data.idx];
         oDb.query(sql,value,function(err,result) {
             if(err) throw err;
-            console.log(result);
             if(result.affectedRows == 1) {
-                res.send("공고 삭제가 완료되었습니다.");
+                res.send({result: "공고 삭제완료"});
             }
         })
     }
 
     getNoticeList(data,res){
-        res.send({result:results});
+        const oDb = mysql.createConnection(this.oDbConfig);
+        let sql = "SELECT notice.idx,company.name, notice.nation,notice.region,notice.position, notice.reward,notice.skill FROM notice join company on notice.company_id = company.idx";
+        oDb.query(sql,function(err,results) {
+            if(err) throw err;
+            res.send({result:results});
+        })
     }
 
     getNoticeDetail(data,res){
-        res.send({result:results});
+        const oDb = mysql.createConnection(this.oDbConfig);
+        let sql = "SELECT notice.idx,company.name, notice.nation,notice.region,notice.position, notice.reward,notice.skill,notice.detail,notice.company_id,(select group_concat(notice.idx) from notice group by notice.company_id having notice.company_id = ?) as company_notice FROM notice left join company on notice.company_id = company.idx where notice.idx=?;";
+        let value = [data.company_id,data.notice_idx];
+        oDb.query(sql,value,function(err,results) {
+            if(err) throw err;
+            res.send({result:results});
+
+        })  
     }
 
     applyRecuit(data,res){
