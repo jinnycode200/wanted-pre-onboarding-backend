@@ -34,12 +34,14 @@ class RecuitNotice {
             this.getNoticeDetail(req,res);
         })
         app.get("/apply",(req,res)=>{
+            req = {
+                idx: 1,
+                user_id: 'wanted_yj123',
+                notice_idx: 1,
+            }
             this.applyRecuit(req,res);
         })
-        /**추가예정(마지막순위) */
-        app.get("/search",(req,res)=>{
-            this.searchNotice(req,res);
-        })
+      
         app.listen(3000,()=>{
             console.log("listen!");
         })
@@ -48,7 +50,7 @@ class RecuitNotice {
         const oDb = mysql.createConnection(this.oDbConfig);
         oDb.connect(function(err) {
             if(err) throw err;
-            oDb.query("CREATE TABLE IF NOT EXISTS company(idx INT NOT NULL PRIMARY KEY AUTO_INCREMENT,name VARCHAR(11) NOT NULL);CREATE TABLE IF NOT EXISTS notice(idx INT NOT NULL PRIMARY KEY AUTO_INCREMENT, nation VARCHAR(11) NOT NULL, region VARCHAR(11) NOT NULL, position VARCHAR(20) NOT NULL, reward INT, skill VARCHAR(11) NOT NULL, detail VARCHAR(200),company_id INT NOT NULL, FOREIGN KEY(company_id) REFERENCES company(idx));CREATE TABLE IF NOT EXISTS user(idx INT NOT NULL PRIMARY KEY AUTO_INCREMENT, id VARCHAR(11) NOT NULL,applied_notice INT NOT NULL, FOREIGN KEY(applied_notice) REFERENCES notice(idx));",
+            oDb.query("CREATE TABLE IF NOT EXISTS company(idx INT NOT NULL PRIMARY KEY AUTO_INCREMENT,name VARCHAR(11) NOT NULL);CREATE TABLE IF NOT EXISTS notice(idx INT NOT NULL PRIMARY KEY AUTO_INCREMENT, nation VARCHAR(11) NOT NULL, region VARCHAR(11) NOT NULL, position VARCHAR(20) NOT NULL, reward INT, skill VARCHAR(11) NOT NULL, detail VARCHAR(200),company_id INT NOT NULL, FOREIGN KEY(company_id) REFERENCES company(idx));CREATE TABLE IF NOT EXISTS user(idx INT NOT NULL PRIMARY KEY AUTO_INCREMENT, id VARCHAR(11) NOT NULL; CREATE TABLE IF NOT EXISTS apply (user_idx INT NOT NULL,applied_idx INT NOT NULL ,FOREIGN KEY(user_idx) REFERENCES user(idx),FOREIGN KEY(user_idx) REFERENCES user(idx),FOREIGN KEY(applied_idx) REFERENCES notice(idx))",
             function(err) {
                 console.log(err)
             });
@@ -112,13 +114,16 @@ class RecuitNotice {
     }
 
     applyRecuit(data,res){
-        res.send({result:results});
+        const oDb = mysql.createConnection(this.oDbConfig);
+        let sql = "INSERT INTO user (idx,id,applied_notice) VALUES (?,?,?)";
+        let values = [data.idx, data.user_id, data.notice_idx];
+        oDb.query(sql,values,function(err,result) {
+            if(err) throw err;
+            if(result.affectedRows > 0) {
+                res.send({result: "채용 지원완료"});
+            }
+        })
     }
-
-    /**추가예정(마지막순서) */
-    // searchNotice(data,res){
-    //     res.send({result:results});
-    // }
 }
 const recuit = new RecuitNotice();
 
